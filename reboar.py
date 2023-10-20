@@ -1,22 +1,27 @@
 #!/usr/bin/env python
 
 import os
-
-from modules.operations import convert_flac_to_ogg, delete_artist, delete_tmp_files, retag_copy_mp3_album
+from modules.inputs import user_input_list, user_input_yn
+from modules.operations import delete_artist, delete_tmp_files, retag_copy
 from modules.classes import Artist
 
+# configs
 srcRoot = "/mnt/hylia/"
-destination = "/mnt/usb/"
+default_destination = "/mnt/usb"
 paths = ["Music", "Music_FLAC"]
 tmp = "/tmp/reboar"
-no_per_page = 20
+page_size = 10
 
 if __name__ == "__main__":
   queue = {
     "delete_artists": [],
-    "convert_albums": [],
     "copy_albums": [],
   }
+
+  destination = input(f'Path to mounted usb (default: {default_destination}): ') or destination
+  if not os.path.isdir(destination):
+    print(f'Path {destination} does not exist :(')
+    exit()
 
   if os.path.isdir(tmp):
     delete_tmp_files(tmp)
@@ -36,48 +41,29 @@ if __name__ == "__main__":
   for artist in artist_list:
     artist.number = artist_index
     artist_index += 1
-  
-  if input("Remove existing? (Y/n) ").lower() not in ["n","no"]:
+
+  print(len(artist_list), "artists")
+
+  if user_input_yn("Remove existing? (Y/n) "):
     existing = filter(lambda x: x.dest_artist_exists, artist_list)
-    dict = {} # store pointers using artist number
-    for artist in existing:
-      dict[artist.number] = artist
-      print(artist.number, " -- ", artist.name, " - ", "Full" if artist.dest_artist_full else "Partial")
-    
-    for artist in input("Enter the numbers of the artists you want to remove: (comma separated, no spaces. ie 1,2,3)").split(","):
-      if int(artist) in dict:
-        current_artist = dict[int(artist)]
-        current_artist.remove_artist = True
-        queue["delete_artists"].append(current_artist)
+    user_input_list(list(existing), "Enter the numbers of the artists you want to remove: (comma separated, no spaces. ie 1,2,3 q to quit) ", queue["delete_artists"], page_size)
 
-  if input("Add new? (Y/n) ").lower() not in ["n","no"]:
-    candidates = filter(lambda x: (x.remove_artist or not x.dest_artist_exists), artist_list)
-    dict = {} # store pointers using artist number
-    for artist in candidates:
-      dict[artist.number] = artist
-      print(artist.number, " -- ", artist.name, " - ", "Full" if artist.dest_artist_full else "Partial")
-    
-    for artist in input("Enter the numbers of the artists you'd like to add: (comma separated, no spaces. ie 1,2,3) ").split(","):
-      if int(artist) in dict.keys():
-        current_artist = dict[int(artist)]
-        mini_dict = {}
-        for album in current_artist.albums:
-          mini_dict[album.number] = album
-          print(album.number, " -- ", album.name)
-
-        for album in input("Enter the numbers of the albums you'd like to copy: (comma separated, no spaces. ie 1,2,3) ").split(","):
-          if int(album) in mini_dict.keys():
-            current_album = mini_dict[int(album)]
-            queue["convert_albums"].append(current_album) if current_album.need_convert else queue["copy_albums"].append(current_album)
+  if user_input_yn("Add new? (Y/n) "):
+    candidates = filter(lambda x: (x.remove_artist or not x.dest_artist_full), artist_list)
+    selected = user_input_list(list(candidates), "Enter the numbers of the artists you'd like to add: (comma separated, no spaces. ie 1,2,3 q to quit) ",[],page_size)
+    if user_input_yn("Skip individual album selection? (Y/n) "):
+      for artist in selected:
+        for album in artist.albums:
+          queue["copy_albums"].append(album)
+    else:
+      for artist in selected:
+        user_input_list(list(artist.albums), "Enter the numbers of the albums you'd like to add: (comma separated, no spaces. ie 1,2,3 q to quit) ", queue["copy_albums"], page_size)
 
   print("Artists marked for deletion: ", len(queue["delete_artists"]))
-  print("Albums marked for conversion: ", len(queue["convert_albums"]))
-  print("Albums marked for copying: ", len(queue["copy_albums"]))
+  print("Albums marked for copying/converting: ", len(queue["copy_albums"]))
 
-  if input("Continue? (Y/n) ").lower() not in ["n","no"]:
+  if user_input_yn("Continue? (Y/n) "):
     for artist in queue["delete_artists"]:
       delete_artist(artist)
-    for album in queue["convert_albums"]:
-      convert_flac_to_ogg(album, tmp)
     for album in queue["copy_albums"]:
-      retag_copy_mp3_album(album)
+      retag_copy(album, tmp)

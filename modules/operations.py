@@ -5,6 +5,12 @@ from pydub import AudioSegment
 from mutagen.easyid3 import EasyID3
 from mutagen.oggvorbis import OggVorbis
 
+def retag_copy(album, tmp):
+  if album.need_convert:
+    convert_flac_to_ogg(album, tmp)
+  else:
+    retag_copy_mp3_album(album)
+
 def convert_flac_to_ogg(album, tmp):
   tmp_dir = os.path.join(tmp, album.artist, album.name)
   os.makedirs(tmp_dir , exist_ok=True)

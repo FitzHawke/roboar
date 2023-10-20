@@ -36,6 +36,8 @@ class Album:
 
     # sort and enumerate the songs with their new track numbers
     self.need_convert = any(s.type == ".flac" for s in songs)
+    if (any(s.type == ".flac" for s in songs) and any(s.type == ".mp3" for s in songs)):
+      print(f'shit is fucked in {artist} - {name}')
     self.songs = sorted(songs, key=lambda x: int(x.disk_num)*1000 + int(x.track_num))
     song_index = 1
     for song in self.songs:
