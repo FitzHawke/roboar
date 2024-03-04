@@ -14,7 +14,6 @@ def user_input_yn(question):
 
 def user_input_list(candidates, question, queue=[], page_size=10):
     for i in range(0, math.ceil(len(candidates) / page_size)):
-        print(i)
         dict = {}
         for j in range(0, min(page_size, len(candidates) - i * page_size)):
             curr = candidates[i * page_size + j]

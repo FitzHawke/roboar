@@ -54,7 +54,7 @@ class Album:
         if any(s.type == ".flac" for s in songs) and any(
             s.type == ".mp3" for s in songs
         ):
-            print(f"shit is fucked in {artist} - {name}")
+            print(f"shit is fucked in {artist} - {name}. Both mp3 and FLAC exist for this album")
         self.songs = sorted(
             songs, key=lambda x: int(x.disk_num) * 1000 + int(x.track_num)
         )
