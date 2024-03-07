@@ -13,8 +13,14 @@ Old un-optimized python script that is extremely tuned to my specific use-case; 
 - uses information from path to generate tags
 - expects directory structure of the form `/<music_root>/<artist_name>/[<year>] - <album_name>/<album_number>-<track_number> - <track_name>` but also accepts `/<music_root>/<artist_name>/[<year>] - <album_name>/<track_number> - <track_name>`
 - converts multi-album to single album for improved sorting
-- fun fact, v1.0 (which heroically sacrificed itself to teach me the value of backups) was one of my earliest programming projects. It was a gloriously unreadable mess of poorly named functions/classes/variables based on a nautical pirate theme combined with amateur attempts at handling unicode/ascii in python2 😱. But, in spite of that, it also had a dedicated config file, options of outputs, checking files for updated versions, and probably more features I've forgot. And the peculiar thing is this, my friends, the code we wrote on that fateful night, it didn't actually look anything like this code. So you see, this is not the greatest reboar in the world, no, this is just a [tribute](https://www.youtube.com/watch?v=_lK4cX5xGiQ).
+- fun fact, v1.0 (which heroically sacrificed itself to teach me the value of backups) was one of my earliest programming projects. It was a gloriously unreadable mess of poorly named functions/classes/variables based on a nautical pirate theme combined with amateur attempts at handling unicode/ascii in python2 😱. But, in spite of that, it also had a dedicated config file, options of outputs, checking files for updated versions, and probably more features I've both forgot and/or not bothered to re-implement. And the peculiar thing is this, my friends, the code we wrote on that fateful night, it didn't actually look anything like this code. So you see, this is not the greatest reboar in the world, no, this is just a [tribute](https://www.youtube.com/watch?v=_lK4cX5xGiQ).
 
 Might someday update to be more robust/support other formats, but in the age of spotify my music collection is stagnant so this doesn't receive much attention. Reach out to me if that seems like it'd be useful to you.
 
 Requires mutagen and ffmpeg to work. Settings are variables set at the top of init.py
+
+Sometimes requires changing the UUID of the FAT32 formatted usb drive otherwise the primative computer in the vehicle gets confused about which songs do and do not exist. For nixos the following can be run to force a re-index:
+
+```nix
+nix-shell -p mtools --run "mlabel -N $(uuidgen | head -c8) -i  /dev/sdc1 ::"
+```
